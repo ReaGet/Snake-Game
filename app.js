@@ -1,8 +1,8 @@
 const canvas = document.querySelector('canvas'),
   ctx = canvas.getContext('2d');
 
-const W = canvas.width = 500,
-  H = canvas.height = 500;
+const W = canvas.width = 600,
+  H = canvas.height = 600;
 
 let GAMEOVER = false;
 
@@ -89,11 +89,8 @@ function createGrid() {
   for (let i = 0; i < size; i++) {
     const line = [];
     for (let j = 0; j < size; j++) {
-      let type = 0;
-      if (snake.body[0].x == j && snake.body[0].y == i) { type = 1 }
-      if (apple.x == j && apple.y == i) { type = 2 }
       line.push({
-        x: j, y: i, type: type, s: (W - (canvasOffset) * 2) / size - 3
+        x: j, y: i
       })
     }
     grid.push(line);
@@ -114,46 +111,42 @@ function draw() {
   ctx.fillStyle = '#93bd8b';
   ctx.fillRect(0, 0, W, H);
 
-  if (!GAMEOVER) {
-    drawGrid();
-  
-    snake.body.forEach((part) => {
-      const {x,y} = part;
-      grid[y][x].type = 1;
-    })
-  } else {
-    ctx.fillText('GAMEOVER', 10, 10);
-  }
+  drawGrid();
+
+  snake.body.forEach((part) => {
+    drawCell(part.x, part.y, '#313131');
+  });
+
+  drawCell(apple.x, apple.y, '#df0513');
 }
 
 function drawGrid() {
   for (let i = 0; i < size; i++) {
     for (let j = 0; j < size; j++) {
-      const {x, y, s, type} = grid[i][j];
-      ctx.fillStyle = colors[type];
-      ctx.strokeStyle = colors[type];
-      ctx.strokeRect(
-        x * (s + 3) + canvasOffset, 
-        y * (s + 3) + canvasOffset, 
-        s, 
-        s);
-
-      ctx.fillRect(
-        x * (s + 3) + canvasOffset + 3, 
-        y * (s + 3) + canvasOffset + 3, 
-        s - 6, 
-        s - 6);
+      drawCell(grid[i][j].x, grid[i][j].y, '#7fa278');
     }
   }
 }
 
-function update() {
-  if (GAMEOVER)
-    return;
-  
-  // GAMEOVER = gameEnded();
+function drawCell(x, y, color) {
+  const s = (W - (canvasOffset) * 2) / size - 3;
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.strokeRect(
+    x * (s + 3) + canvasOffset, 
+    y * (s + 3) + canvasOffset, 
+    s, 
+    s);
+
+  ctx.fillRect(
+    x * (s + 3) + canvasOffset + 3, 
+    y * (s + 3) + canvasOffset + 3, 
+    s - 6, 
+    s - 6);
+}
+
+function update() {  
   makeMove();
-  // console.log(GAMEOVER)
 }
 
 function getDir() {
@@ -187,26 +180,27 @@ function makeMove() {
   newY = snake.body[0].y + moves.y;
   
   const head = { x: newX, y: newY };
-  // let last = ;
   snake.body.unshift(head);
 
-  
   if (apple.x == newX && apple.y == newY) {
-    snake.addPart(apple.x, apple.y);
-    apple.changePos(grid);
-    grid[apple.y][apple.x].type = 2;
+    apple.changePos();
   } else {
-    let last = snake.body.pop()
-    grid[last.y][last.x].type = 0;
+    snake.body.pop()
   }
   
-  grid[newY][newX].type = 1;
   canChangeMove = true;
 }
 
 createGrid();
 
 setInterval(() => {
+  if (gameEnded()) {
+    ctx.fillStyle = '#fff';
+    ctx.font = 'normal 48px monospace';
+    ctx.fillText('GameOver', 170, 250);
+    return;
+  }
+
   update();
   draw();
 }, 1000 / 10);
