@@ -1,14 +1,17 @@
 const canvas = document.querySelector('canvas'),
   ctx = canvas.getContext('2d');
 
-const W = canvas.width = 600,
-  H = canvas.height = 600;
+const W = canvas.width = document.body.offsetWidth,
+  H = canvas.height = document.body.offsetHeight;
 
 let GAMEOVER = false;
 
-const size = 15,
-  canvasOffset = 10,
+const size = 25,
+  canvasOffset = 5,
   cellOffset = 1;
+
+const countH = ~~(H / size),
+  countW = ~~(W / size);
 
 let canChangeMove = true;
 
@@ -19,8 +22,8 @@ let grid = [];
 const snake = {
   body: [
     {
-      x: ~~(size / 2),
-      y: ~~(size / 2)
+      x: ~~(countW / 2),
+      y: ~~(countH / 2)
     },
     // {
     //   x: 10,
@@ -86,9 +89,9 @@ function isDirAllowed(key) {
 
 function createGrid() {
   grid = []
-  for (let i = 0; i < size; i++) {
+  for (let i = 0; i < countH; i++) {
     const line = [];
-    for (let j = 0; j < size; j++) {
+    for (let j = 0; j < countW; j++) {
       line.push({
         x: j, y: i
       })
@@ -121,15 +124,23 @@ function draw() {
 }
 
 function drawGrid() {
-  for (let i = 0; i < size; i++) {
-    for (let j = 0; j < size; j++) {
+  for (let i = 0; i < countH; i++) {
+    for (let j = 0; j < countW; j++) {
       drawCell(grid[i][j].x, grid[i][j].y, '#7fa278');
     }
   }
 }
 
+function getSize() {
+  if (W < H) {
+    return countW;
+  } else {
+    return countW < countH ? countH : countW;
+  }
+}
+
 function drawCell(x, y, color) {
-  const s = (W - (canvasOffset) * 2) / size - 3;
+  const s = (W - (canvasOffset) * 2) / getSize() - 3;
   ctx.fillStyle = color;
   ctx.strokeStyle = color;
   ctx.strokeRect(
@@ -164,10 +175,10 @@ function makeMove() {
   if (newY < 0) {
     snake.right();
   }
-  if (newX > size - 1) {
+  if (newX > countW - 1) {
     snake.down();
   }
-  if (newY > size - 1) {
+  if (newY > countH - 1) {
     snake.left();
   }
   if (newX < 0) {
